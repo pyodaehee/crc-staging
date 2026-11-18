@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#153e39">
+<meta name="description" content="AJCC Version 9 및 UICC 9.1.2027에 따른 결장·직장암 병기 계산기">
+<title>대장직장암 병기 계산기 · AJCC Version 9</title>
+<style>
+:root{color-scheme:light;--ink:#152f2d;--muted:#526862;--line:#d8e2dd;--teal:#075d50;--wash:#edf4f0;--white:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:#f5f7f3;color:var(--ink);font:15px/1.55 "Inter",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;word-break:keep-all}
+button,input,select{font:inherit}
+button,summary,label.choice{cursor:pointer}
+a{color:var(--teal);text-underline-offset:3px}
+:focus-visible{outline:3px solid #aa6312;outline-offset:3px}
+.wrap{width:min(1120px,calc(100% - 64px));margin:auto}
+.topbar{background:var(--white);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.brand,.reference-link,.titlebar,.eyeline,.progress,.result-chips,.toplinks{display:flex;align-items:center;gap:10px}
+.brand{font-weight:750;letter-spacing:-.03em}
+.mark{width:31px;height:31px;border-radius:8px;background:var(--teal);color:white;display:grid;place-items:center}
+svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.toplinks{gap:20px}.reference-link{font-size:13px;font-weight:600;text-decoration:none;color:var(--ink)}
+main{padding:36px 0 42px}
+.eyeline{font-size:12px;font-weight:700;letter-spacing:.035em;color:var(--teal);gap:9px}
+.eyeline i{width:4px;height:4px;background:#78988a;border-radius:50%}
+h1,h2,h3,p{margin:0}
+h1{font-size:clamp(31px,4vw,46px);line-height:1.23;letter-spacing:-.065em;font-weight:750;margin:9px 0 8px}
+.intro{color:var(--muted);font-size:15px}
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(304px,1fr);gap:22px;margin:26px 0 18px;align-items:start}
+.card{border:1px solid var(--line);border-radius:17px;background:white}
+.input-card{padding:22px 26px 23px}
+.titlebar{justify-content:space-between;gap:12px}
+h2{font-size:20px;letter-spacing:-.055em}
+h3{font-size:15px;letter-spacing:-.035em}
+.progress{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;gap:8px}
+progress{width:55px;height:5px;appearance:none;border:0;border-radius:5px;overflow:hidden;background:#e3ece7;vertical-align:middle}
+progress::-webkit-progress-bar{background:#e3ece7}
+progress::-webkit-progress-value,progress::-moz-progress-bar{background:var(--teal)}
+.sep{display:flex;align-items:center;gap:9px;color:var(--teal);font-weight:700;font-size:12px;margin:18px 0 11px}
+.sep:after{content:"";height:1px;flex:1;background:var(--line)}
+fieldset{min-width:0;border:0;padding:0;margin:0}
+legend,.label{font-weight:700;font-size:15px;letter-spacing:-.025em;padding:0;margin-bottom:7px}
+.inputs{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px}
+.full{grid-column:1/-1}
+.choices{display:flex;flex-wrap:wrap;gap:5px}
+.choice{position:relative;min-width:0}
+.choice input{position:absolute;opacity:0;inset:0;margin:0;width:100%;height:100%;cursor:pointer}
+.choice span{display:flex;align-items:center;justify-content:center;height:39px;min-width:44px;padding:0 11px;border:1px solid #cbd9d3;border-radius:7px;color:#405a53;background:#fcfdfb;font-size:14px;font-weight:600;transition:background .13s,color .13s}
+.choice input:checked+span{background:var(--teal);color:white;border-color:var(--teal)}
+.choice input:focus-visible+span{outline:3px solid #aa6312;outline-offset:2px}
+.choice:hover input:not(:checked)+span{background:var(--wash);border-color:#92afa1}
+.nrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.count{height:39px;display:flex;align-items:center;gap:6px;width:112px;border:1px solid #cbd9d3;border-radius:7px;padding:0 10px;color:var(--muted);font-size:13px}
+.count:focus-within{outline:2px solid var(--teal);outline-offset:1px}
+.count input{width:100%;min-width:0;border:0;background:transparent;outline:none;color:var(--ink);font-size:16px;font-variant-numeric:tabular-nums}
+.count input:disabled{opacity:.35}.nx{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.nx input{width:16px;height:16px;accent-color:var(--teal)}
+.help,.error{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+.error{color:#9a3424}
+.actions{margin-top:21px;border-top:1px solid var(--line);padding-top:13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.actions button,.example{border:0;background:transparent;color:var(--teal);font-size:13px;font-weight:650;padding:5px 0}
+.actions button{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.actions button:disabled{opacity:.48;cursor:default}
+.example{text-decoration:underline;text-underline-offset:4px}
+.side{display:grid;gap:14px}
+.result{color:white;background:#143f38;border-radius:17px;overflow:hidden;position:relative}
+.result:before{content:"";pointer-events:none;position:absolute;right:-41px;top:-65px;width:226px;height:164px;opacity:.35;transform:rotate(-24deg);background:repeating-linear-gradient(0deg,transparent 0 10px,#508779 10px 11px)}
+.result-inner{padding:23px 25px 22px;position:relative}
+.result-header{display:flex;align-items:center;gap:8px;font-size:14px;color:#d9eee2;font-weight:650}
+.output{font-size:clamp(35px,3.8vw,50px);font-weight:650;letter-spacing:-.055em;line-height:1.2;margin:22px 0 8px;font-variant-numeric:tabular-nums}
+.output.pending{font-size:32px;letter-spacing:-.06em}
+.result-desc{font-size:14px;line-height:1.6;color:#d4e7df;min-height:44px}
+.result-chips{gap:6px;flex-wrap:wrap;border-top:1px solid #527368;padding-top:14px;margin-top:16px}
+.token{border:1px solid #618278;border-radius:6px;padding:3px 9px;color:#e7f5ed;font:600 14px/1.6 "Inter",sans-serif}
+.token[data-set="false"]{color:#c2d6cb;border-style:dashed}
+.hint{padding:18px 22px;background:#edf4ee;border:1px solid #d3e1d6;border-radius:14px}
+.hint h3{display:flex;align-items:center;gap:7px;color:#244c41}
+.hint p{font-size:13px;color:#3d594e;margin:7px 0 0;line-height:1.7}
+.hint b{font-weight:650;color:#213f35}
+details.guide{padding:0 22px}
+.guide summary{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;min-height:58px;font-weight:700}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary span{display:flex;align-items:center;gap:9px}
+.guide summary .chev{transition:transform .15s}.guide[open] summary .chev{transform:rotate(180deg)}
+.guide-body{border-top:1px solid var(--line);padding:18px 0 22px;display:grid;gap:15px}
+.guide-body p,.guide-body li{font-size:13px;color:var(--muted)}
+.guide-body ul{padding-left:19px;margin:5px 0}
+.guide-body h3{margin:0 0 4px}
+.scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;text-align:center;font-variant-numeric:tabular-nums}th,td{border-bottom:1px solid var(--line);padding:5px 8px}thead{background:var(--wash)}
+.examples-inline{display:flex;gap:14px;flex-wrap:wrap}
+.foot{margin:16px 2px 0;color:var(--muted);font-size:12px}
+[hidden]{display:none!important}
+@media(max-width:850px){.wrap{width:calc(100% - 36px)}.layout{grid-template-columns:minmax(0,1.4fr) minmax(230px,1fr);gap:14px}.inputs{gap:16px}.input-card{padding:20px}.result-inner{padding:21px}.choices{gap:4px}.choice span{padding:0 9px}}
+@media(max-width:680px){.wrap{width:calc(100% - 28px)}.topbar .wrap{height:52px}main{padding-top:23px}.layout{display:flex;flex-direction:column;gap:12px;margin-top:18px}.side,.input-card{width:100%}.inputs{gap:16px 13px}.result-desc{min-height:0}.output{margin:12px 0 6px}.side{gap:12px}.result-inner{padding:18px 20px}.result-chips{margin-top:12px;padding-top:10px}.intro{font-size:14px}.guide{scroll-margin-top:8px}}
+@media(max-width:440px){.input-card{padding:18px 15px}.inputs{grid-template-columns:1fr}.full{grid-column:auto}.choice span{min-width:43px}.result .output{font-size:36px}.result .output.pending{font-size:29px}.toplinks{gap:7px}.guide summary{font-size:14px}.foot{font-size:11px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+<div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8V4h4m8 0h4v4m0 8v4h-4M8 20H4v-4m8-8v8m-4-4h8"/></svg></span>CRC Staging</div>
+<a class="reference-link" href="#guide" id="jump"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5c3.5-1 6.5-.6 9 1.2 2.5-1.8 5.5-2.2 9-1.2v14c-3.5-1-6.5-.6-9 1.2-2.5-1.8-5.5-2.2-9-1.2zM12 6v13"/></svg>병기표·근거</a></div></header>
+<main class="wrap">
+<div class="eyeline">AJCC Version 9 <i></i> UICC 9.1.2027</div>
+<h1>대장직장암 병기 계산기</h1>
+<p class="intro">결장·직장 원발 암종의 T, 림프절, 종양침착과 원격전이 소견을 입력하세요.</p>
+<div class="layout">
+<form id="entry" class="card input-card" autocomplete="off" novalidate>
+<div class="titlebar"><h2>병기 입력</h2><div class="progress"><progress id="bar" value="0" max="5" aria-label="완료한 입력"></progress><span id="progress">0 / 5</span></div></div>
+<div class="sep">원발 병변과 국소 소견</div>
+<div class="inputs">
+<fieldset class="full"><legend>원발 종양 T</legend><div class="choices" id="t-options"></div></fieldset>
+<div><label class="label" for="ln" style="display:block">양성 구역 림프절 수</label>
+<div class="nrow"><label class="count"><input id="ln" name="ln" type="text" inputmode="numeric" placeholder="개수" aria-describedby="ln-help ln-error"><span>개</span></label>
+<label class="nx"><input type="checkbox" id="nx"> NX 미평가</label></div>
+<p class="help" id="ln-help">검사한 림프절이 모두 음성이면 0개</p><p class="error" id="ln-error" hidden>0 이상의 정수를 입력하세요.</p></div>
+<fieldset><legend>종양침착 <span lang="en">(TD)</span></legend><div class="choices" id="td-options"></div><p class="help">1개 이상이면 있음</p></fieldset>
+</div>
+<div class="sep">원격전이</div><div class="inputs">
+<fieldset><legend>복막 외 전이 장기·부위 수</legend><div class="choices" id="sites-options"></div><p class="help">같은 장기의 여러 병변은 1곳으로 계산</p></fieldset>
+<fieldset><legend>복막전이</legend><div class="choices" id="per-options"></div><p class="help">원발암과 떨어진 복막 전이 결절</p></fieldset>
+</div>
+<div class="actions"><button type="button" id="sample" class="example">예시 증례 입력</button><button type="button" id="clear-form" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10a9 9 0 1 1 1.8 7M3 4v6h6"/></svg>초기화</button></div>
+</form>
+<aside class="side"><section class="result" aria-labelledby="result-head"><div class="result-inner">
+<div id="result-head" class="result-header"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h4v4H3zm7-5h4v9h-4zm7-8h4v17h-4z"/></svg>최종 병기군</div>
+<div aria-live="polite" aria-atomic="true"><div class="output pending" id="stage">입력 대기</div><p class="result-desc" id="reason">다섯 항목을 입력하면 병기군이 표시됩니다.</p>
+<div class="result-chips" aria-label="TNM과 종양침착"><span class="token" id="rt">T —</span><span class="token" id="rn">N —</span><span class="token" id="rm">M —</span><span class="token" id="rd">TD —</span></div></div></div></section>
+<section class="hint"><h3><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9v.2"/></svg>개정판 입력 메모</h3>
+<p><b>N1c는 양성 구역 림프절 3개</b>입니다. Tumor deposit은 림프절 수와 별도로 입력합니다.</p>
+<p>비구역 림프절 전이는 복막 외 전이 부위에 포함합니다. 원발암의 장막 직접 침윤(T4a)만 있으면 복막전이는 ‘없음’입니다.</p></section></aside>
+</div>
+<details class="guide card" id="guide"><summary><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v15H3zM3 10h18m-12 0v10"/></svg>병기표와 적용 범위</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+<div class="guide-body"><div><h3>M0 병기군</h3><p>각 칸의 순서는 ‘TD0 또는 TDX / TD1’입니다. 대시는 원문에 해당 병기군이 없는 조합입니다.</p></div>
+<div class="scroll"><table><thead><tr><th scope="col">T</th><th scope="col">N0</th><th scope="col">N1a</th><th scope="col">N1b</th><th scope="col">N1c</th><th scope="col">N2a</th><th scope="col">N2b</th></tr></thead><tbody id="matrix"></tbody></table></div>
+<p>양성 구역 림프절 0개는 N0, 1개는 N1a, 2개는 N1b, 3개는 N1c, 4개는 N2a, 5개 이상은 N2b입니다. NX에서는 M0이고 TD0 또는 TDX인 Tis와 T1에 각각 Stage 0과 I를 부여할 수 있습니다.</p>
+<div><h3>M1 병기군</h3><p>복막전이 없이 한 부위이면 M1a(IVA), 두 부위 이상이면 M1b(IVB)입니다. 복막 단독 전이는 M1c1, 다른 부위 전이가 동반되면 M1c2이며 둘 다 IVC입니다. 한 비구역 림프절 사슬은 한 부위로 계산합니다.</p></div>
+<div><h3>적용 범위</h3><ul><li>2027년 진단분부터 적용하는 결장·직장 암종 기준입니다. 충수암과 고분화 신경내분비종양은 별도 분류를 사용합니다.</li><li>양성 림프절은 원발 부위의 구역 림프절만 셉니다. ITC만 있는 림프절은 양성 수에서 제외합니다.</li><li>TD 미평가는 TDX로 보존합니다. T와 N은 같은 평가 시점의 값을 사용하세요. 선행치료 후에는 y 접두어를 사용하며, 진단 당시 확인된 원격전이는 치료 반응 후에도 반영합니다.</li><li>절제 후 ypT0N0M0(병리학적 완전반응)는 Tis와 구분합니다. 병기군 표에 매핑되지 않는 조합은 입력한 분류만 표시합니다.</li></ul></div>
+<p>Brierley JD 등. <i>International Journal of Cancer</i>, 2026. Table 1, §7. <a href="https://doi.org/10.1002/ijc.70767" target="_blank" rel="noopener noreferrer">개정 원문 ↗</a> · <a href="https://seer.cancer.gov/tools/ssm/Version-3.4-Changes-EOD-%20Summary-Stage.pdf" target="_blank" rel="noopener noreferrer">SEER 적용 연도 ↗</a></p>
+</div></details>
+<p class="foot">입력값은 현재 브라우저에서 계산되며 저장하거나 전송하지 않습니다.</p>
+<noscript><p>병기 계산을 위해 브라우저에서 JavaScript를 활성화하세요.</p></noscript>
+</main>
+<script id="rules">
+"use strict";
+const NODE_BANDS = ["N0", "N1a", "N1b", "N1c", "N2a", "N2b"];
+// Columns are regional node categories in NODE_BANDS order.
+// Each pair gives the M0 group with TD0/TDX first and TD1 second (section 7).
+const STAGE_ROWS = {
+  Tis: [["0", null], [null, null], [null, null], [null, null], [null, null], [null, null]],
+  T1:  [["I","IIB"], ["IIB","IIIA"], ["IIB","IIIA"], ["IIB","IIIA"], ["IIB","IIIA"], ["IIB","IIIA"]],
+  T2:  [["IIA","IIB"], ["IIB","IIIA"], ["IIB","IIIA"], ["IIB","IIIA"], ["IIB","IIIA"], ["IIIA","IIIB"]],
+  T3:  [["IIB","IIIA"], ["IIIA","IIIB"], ["IIIA","IIIB"], ["IIIA","IIIB"], ["IIIA","IIIB"], ["IIIB","IIIC"]],
+  T4a: [["IIIB","IIIC"], ["IIIB","IIIC"], ["IIIB","IIIC"], ["IIIB","IIIC"], ["IIIB","IIIC"], ["IIIC","IIIC"]],
+  T4b: [["IIIB","IIIC"], ["IIIB","IIIC"], ["IIIB","IIIC"], ["IIIC","IIIC"], ["IIIC","IIIC"], ["IIIC","IIIC"]]
+};
+const DISTANT = {M1a:"IVA", M1b:"IVB", M1c1:"IVC", M1c2:"IVC"};
+function nodeCategory(raw, unknown){
+  if(unknown) return "NX";
+  if(typeof raw !== "string" || !/^\d+$/.test(raw.trim())) return null;
+  const count=Number(raw.trim());
+  return Number.isSafeInteger(count) ? NODE_BANDS[Math.min(count,5)] : null;
+}
+function metastasis(sites,per){
+  if(!["0","1","2"].includes(sites) || !["yes","no"].includes(per)) return null;
+  if(per==="yes") return sites==="0" ? "M1c1" : "M1c2";
+  return {0:"M0",1:"M1a",2:"M1b"}[sites];
+}
+function stageGroup(t,n,m,td){
+  if(![...Object.keys(STAGE_ROWS),"T0","TX"].includes(t) ||
+     ![...NODE_BANDS,"NX"].includes(n) || !["TD0","TD1","TDX"].includes(td)) return null;
+  if(Object.hasOwn(DISTANT,m)) return DISTANT[m];
+  if(m!=="M0") return null;
+  if(n==="NX") return td!=="TD1" ? ({Tis:"0",T1:"I"}[t] ?? null) : null;
+  return STAGE_ROWS[t]?.[NODE_BANDS.indexOf(n)]?.[Number(td==="TD1")] ?? null;
+}
+</script>
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const form=el("entry");
+const groups={
+  t:[...Object.keys(STAGE_ROWS),"T0","TX"].map(x=>[x,x]),
+  td:[["TD0","없음"],["TD1","있음"],["TDX","미평가"]],
+  sites:[["0","0곳"],["1","1곳"],["2","2곳 이상"]],
+  per:[["no","없음"],["yes","있음"]]
+};
+for(const [name,options] of Object.entries(groups)){
+  const host=el(name+"-options");
+  for(const [value,title] of options){
+    const label=document.createElement("label");
+    label.className="choice";
+    const radio=document.createElement("input");
+    radio.type="radio";radio.name=name;radio.value=value;
+    const span=document.createElement("span");
+    span.textContent=title;
+    label.append(radio,span);host.append(label);
+  }
+}
+for(const [t,row] of Object.entries(STAGE_ROWS)){
+  const tr=el("matrix").insertRow();
+  const th=document.createElement("th");
+  th.scope="row";th.textContent=t;tr.append(th);
+  for(const pair of row) tr.insertCell().textContent=pair.map(s=>s??"—").join(" / ");
+}
+const selected=name=>form.elements.namedItem(name).value;
+const explanations={
+  M1a:"복막 외 한 부위에 원격전이가 있어 IVA입니다.",
+  M1b:"복막 외 두 부위 이상에 원격전이가 있어 IVB입니다.",
+  M1c1:"복막에만 전이가 있어 M1c1이며, 최종 병기군은 IVC입니다.",
+  M1c2:"복막과 다른 부위에 전이가 있어 M1c2이며, 최종 병기군은 IVC입니다."
+};
+function render(){
+  const t=selected("t"),td=selected("td"),sites=selected("sites"),per=selected("per");
+  const nx=el("nx").checked,raw=el("ln").value;
+  el("ln").disabled=nx;
+  const n=nodeCategory(raw,nx),m=metastasis(sites,per);
+  const bad=raw!=="" && !n;
+  el("ln-error").hidden=!bad;el("ln").setAttribute("aria-invalid",String(bad));
+  const values=[t,n,td,sites,per],done=values.filter(Boolean).length;
+  el("bar").value=done;el("progress").textContent=done+" / 5";
+  el("clear-form").disabled=done===0 && !raw;
+  for(const [id,value,type] of [["rt",t,"T"],["rn",n,"N"],["rm",m,"M"],["rd",td,"TD"]]){
+    el(id).textContent=value || type+" —";el(id).dataset.set=String(Boolean(value));
+  }
+  let heading="입력 대기",reason="다섯 항목을 입력하면 병기군이 표시됩니다.";
+  const stage=stageGroup(t,n,m,td);
+  if(done===5){
+    if(stage!==null){
+      heading="Stage "+stage;
+      const node=n==="NX" ? "구역 림프절 미평가(NX)" : "양성 구역 림프절 "+Number(raw)+"개("+n+")";
+      const deposit={TD0:"종양침착 없음",TD1:"종양침착 있음",TDX:"종양침착 미평가"}[td];
+      reason=explanations[m] || (t+" · "+node+" · "+deposit+" · 원격전이 없음");
+      if(t==="Tis" && m!=="M0") reason+=" Tis와 원격전이가 함께 입력되어 원발 병변의 침윤 여부를 재확인하세요.";
+    }else{
+      heading="병기군 미부여";
+      if(t==="T0") reason="M0에서 T0에 해당하는 병기군은 표에 없습니다. 선행치료 후라면 ypT와 ypN을 기록하세요.";
+      else if(t==="TX") reason="원발 종양을 평가할 수 없는 TX · M0 조합은 병기군 표에 없습니다.";
+      else if(t==="Tis") reason="Tis의 Stage 0 요건과 맞지 않습니다. 림프절·종양침착 양성 소견과 침윤성 원발암 여부를 확인하세요.";
+      else reason="이 조합에는 구역 림프절 평가가 필요합니다. 원문에서 NX는 M0·TD0/TDX인 Tis와 T1에만 명시되어 있습니다.";
+    }
+  }else if(bad){heading="입력 확인";reason="양성 구역 림프절 수에 0 이상의 정수를 입력하세요.";}
+  else if(done>0){reason="남은 항목 · "+["원발 종양 T","양성 구역 림프절 수","종양침착","복막 외 전이 부위 수","복막전이"].filter((_,i)=>!values[i]).join(", ");}
+  el("stage").textContent=heading;el("stage").classList.toggle("pending",stage===null);
+  el("reason").textContent=reason;
+}
+form.addEventListener("submit",event=>event.preventDefault());
+form.addEventListener("input",event=>{
+  if(event.target.id==="nx" && event.target.checked) el("ln").value="";
+  render();
+});
+el("clear-form").addEventListener("click",()=>{
+  form.reset();
+  render();
+});
+el("sample").addEventListener("click",()=>{
+  form.elements.t.value="T3";el("nx").checked=false;el("ln").value="0";
+  form.elements.td.value="TD1";form.elements.sites.value="0";form.elements.per.value="no";
+  render();
+});
+el("jump").addEventListener("click",()=>{el("guide").open=true});
+render();
+</script>
+</body></html>
